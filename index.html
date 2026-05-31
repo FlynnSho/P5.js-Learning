@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creative Coding Learning Plan</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      background: #0a0a0f;
+      color: #e8e8f0;
+      overflow-x: hidden;
+    }
+
+    /* Animated mesh background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(83,74,183,0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(29,158,117,0.15) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 60% 30%, rgba(216,90,48,0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header { margin-bottom: 2rem; }
+    .header-eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7f77dd;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #ffffff 0%, #a9a4e8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+    .subtitle { font-size: 14px; color: rgba(255,255,255,0.35); line-height: 1.6; }
+
+    /* Glass card base */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 16px;
+    }
+
+    /* Stats */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
+    .stat {
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    }
+    .stat-l { font-size: 11px; color: rgba(255,255,255,0.35); margin-bottom: 6px; letter-spacing: 0.03em; }
+    .stat-v { font-size: 26px; font-weight: 600; color: #fff; }
+
+    /* Phase nav */
+    .phase-nav { display: flex; gap: 8px; margin-bottom: 1.75rem; flex-wrap: wrap; }
+    .phase-btn {
+      padding: 7px 18px;
+      font-size: 13px;
+      font-family: inherit;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50px;
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.45);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.01em;
+    }
+    .phase-btn:hover {
+      border-color: rgba(83,74,183,0.6);
+      color: #a9a4e8;
+      background: rgba(83,74,183,0.1);
+    }
+    .phase-btn.active {
+      background: linear-gradient(135deg, #534AB7, #7f77dd);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 20px rgba(83,74,183,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    /* Phase header */
+    .phase-header { margin-bottom: 1rem; }
+    .phase-title { font-size: 20px; font-weight: 600; color: #fff; }
+    .phase-meta { font-size: 13px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      margin: 14px 0 1.75rem;
+      overflow: visible;
+      position: relative;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+      position: relative;
+    }
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: -1px; top: -2px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: inherit;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    /* Day grid */
+    .day-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .day-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .day-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .day-card:hover {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-1px);
+    }
+    .day-card:hover::before { opacity: 1; }
+
+    .day-card.active-day {
+      border-color: rgba(83,74,183,0.7);
+      background: rgba(83,74,183,0.12);
+      box-shadow: 0 0 0 1px rgba(83,74,183,0.3), 0 8px 24px rgba(83,74,183,0.15);
+    }
+    .day-card.active-day::before { opacity: 1; background: linear-gradient(90deg, transparent, rgba(127,119,221,0.4), transparent); }
+
+    .day-card.done {
+      border-color: rgba(29,158,117,0.45);
+      background: rgba(29,158,117,0.08);
+    }
+    .day-card.done::before { opacity: 1; background: linear-gradient(90deg, transparent, rgba(29,158,117,0.3), transparent); }
+
+    .day-num { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.25); margin-bottom: 7px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .day-card.done .day-num { color: rgba(29,158,117,0.7); }
+    .day-card.active-day .day-num { color: rgba(127,119,221,0.8); }
+
+    .day-title { font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.8); margin-bottom: 6px; line-height: 1.35; }
+    .day-card.done .day-title { color: rgba(29,158,117,0.9); }
+
+    .day-time { font-size: 11px; color: rgba(255,255,255,0.25); display: flex; align-items: center; gap: 4px; }
+    .day-card.done .day-time { color: rgba(29,158,117,0.55); }
+
+    .check-icon { float: right; color: #1D9E75; font-size: 13px; margin-left: 6px; }
+
+    /* Detail panel */
+    .detail-panel {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .detail-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    }
+
+    .detail-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1rem;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .task-list { list-style: none; }
+    .task-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.55;
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #7f77dd;
+      margin-top: 7px;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px rgba(127,119,221,0.6);
+    }
+
+    .resource-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .resource-tag {
+      font-size: 11.5px;
+      padding: 4px 12px;
+      background: rgba(83,74,183,0.15);
+      color: #a9a4e8;
+      border-radius: 50px;
+      border: 1px solid rgba(83,74,183,0.25);
+      letter-spacing: 0.01em;
+    }
+
+    .mark-btn {
+      margin-top: 16px;
+      padding: 9px 20px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .mark-btn:hover {
+      background: rgba(29,158,117,0.12);
+      border-color: rgba(29,158,117,0.4);
+      color: #5DCAA5;
+    }
+    .mark-btn.done-btn {
+      background: linear-gradient(135deg, rgba(29,158,117,0.3), rgba(29,158,117,0.15));
+      border-color: rgba(29,158,117,0.5);
+      color: #5DCAA5;
+      box-shadow: 0 4px 16px rgba(29,158,117,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    @media (max-width: 600px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .day-grid { grid-template-columns: 1fr 1fr; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-eyebrow">6-month programme</div>
+    <h1>Creative coding learning plan</h1>
+    <p class="subtitle">Your path from graphic designer to design-with-code — click any day to see tasks</p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-l">Days completed</div><div class="stat-v" id="stat-done">0</div></div>
+    <div class="stat"><div class="stat-l">Current phase</div><div class="stat-v" id="stat-phase">1 of 4</div></div>
+    <div class="stat"><div class="stat-l">Days remaining</div><div class="stat-v" id="stat-remaining">70</div></div>
+  </div>
+
+  <div class="phase-nav" id="phase-nav"></div>
+  <div id="phase-content"></div>
+
+</div>
+
+<script>
+const phases = [
+  {
+    id: 1, name: "Phase 1", title: "p5.js & creative coding basics", duration: "weeks 1–6", color: "#7f77dd",
+    days: [
+      { title: "Set up VS Code + p5.js", time: "45 min", tasks: ["Install VS Code and the Live Server extension", "Set up your first p5.js sketch file", "Draw a circle and a rectangle — understand setup() and draw()", "Watch Coding Train intro video (ep 1)"], resources: ["thecodingtrain.com", "p5js.org/learn"] },
+      { title: "Shapes & colour", time: "1 hr", tasks: ["Learn ellipse, rect, line, point functions", "Explore fill(), stroke(), background()", "Build a simple geometric composition", "Sketch 3 variations with different colour palettes"], resources: ["p5js.org reference"] },
+      { title: "Variables & animation", time: "1 hr", tasks: ["Understand let, const, var", "Use a variable to move a shape across the screen", "Add mouseX and mouseY interactivity", "Make something react to the mouse"], resources: ["Coding Train ep 2–3"] },
+      { title: "Loops & repetition", time: "1 hr", tasks: ["Learn for loops and while loops", "Draw a grid of shapes using nested loops", "Vary size or colour based on position", "Post your grid sketch somewhere"], resources: ["Coding Train ep 4"] },
+      { title: "Random & noise", time: "1 hr", tasks: ["Learn random() and Perlin noise with noise()", "Make a sketch where shapes are randomly placed", "Replace random with noise() — feel the difference", "Create an organic-looking pattern"], resources: ["Coding Train ep 13 (noise)"] },
+      { title: "Functions", time: "1 hr", tasks: ["Write your own function to draw a repeated element", "Parameterise it with arguments (x, y, size, colour)", "Call it 20 times in different positions", "Refactor yesterday's grid sketch to use a function"], resources: ["p5js.org reference"] },
+      { title: "Weekly project: generative poster", time: "2 hr", tasks: ["Combine everything from this week", "Build a generative poster using loops, noise, and colour", "Run it 10 times — pick your favourite output", "Post it to Instagram"], resources: ["openprocessing.org for inspiration"] },
+      { title: "Conditionals & logic", time: "1 hr", tasks: ["Learn if/else statements", "Make shapes change colour when mouseX crosses centre", "Add a clicked() or keyPressed() interaction", "Build something with at least 3 conditional states"], resources: ["Coding Train ep 5"] },
+      { title: "Arrays", time: "1 hr", tasks: ["Understand arrays — storing multiple values", "Create an array of 20 positions", "Loop through the array to draw shapes", "Push new items in and splice old ones out"], resources: ["Coding Train ep 6"] },
+      { title: "Objects & classes", time: "1 hr", tasks: ["Learn JavaScript objects — properties and methods", "Create a simple Particle object with x, y, speed", "Make an array of 50 particles", "Update and display them each frame"], resources: ["Coding Train ep 8"] },
+      { title: "Particle systems", time: "1.5 hr", tasks: ["Expand your particle system from yesterday", "Add gravity or wind as a force vector", "Make particles fade out over a lifespan", "Experiment with different spawn rates"], resources: ["Coding Train Nature of Code ch1"] },
+      { title: "Trigonometry for designers", time: "1 hr", tasks: ["Learn sin() and cos() for circular motion", "Move a shape in a circle using trig", "Create a lissajous pattern", "Make a pulsing/breathing shape"], resources: ["Coding Train ep 15"] },
+      { title: "Typography in p5.js", time: "1 hr", tasks: ["Load a font with loadFont()", "Render text and control size, alignment", "Make text react to mouse position", "Experiment with textBounds() for layout"], resources: ["p5js.org typography reference"] },
+      { title: "Weekly project: interactive piece", time: "2 hr", tasks: ["Build something fully interactive", "Must use mouse or keyboard input meaningfully", "Add at least one animated element", "Write a 2-sentence caption explaining the concept"], resources: ["openprocessing.org"] },
+      { title: "Images & pixels", time: "1 hr", tasks: ["Load an image with loadImage()", "Access pixel data with loadPixels()", "Remap pixel brightness to shape size", "Build a pixel-art style image renderer"], resources: ["Coding Train ep 16–17"] },
+      { title: "Sound reactivity basics", time: "1 hr", tasks: ["Install p5.sound library", "Get microphone amplitude", "Make a shape pulse to audio input", "Try getLevel() to drive visual parameters"], resources: ["p5js.org/reference sound"] },
+      { title: "Data + visuals", time: "1 hr", tasks: ["Load a JSON or CSV file with loadJSON()/loadTable()", "Map data values to visual properties (size, colour, position)", "Build a simple data portrait from a dataset you care about", "Think about what story the data tells"], resources: ["p5js.org data reference"] },
+      { title: "Exporting & sharing", time: "45 min", tasks: ["Learn saveCanvas() to export frames", "Understand how to record a sketch with screen capture", "Export 5 still frames from a sketch", "Set up an Instagram or OpenProcessing account if not already done"], resources: ["openprocessing.org"] },
+      { title: "Reverse-engineer a reference", time: "1.5 hr", tasks: ["Pick one sketch from OpenProcessing you admire", "Study the source code for 15 minutes", "Attempt to rebuild it from scratch without copying", "Note what you couldn't figure out — look it up"], resources: ["openprocessing.org"] },
+      { title: "Phase 1 capstone project", time: "3 hr", tasks: ["Build a complete generative artwork from scratch", "Must include: loops, noise, interactivity, and colour system", "Run it 20 times — keep the 3 best outputs", "Post all 3 with a short process note"], resources: ["thecodingtrain.com", "openprocessing.org"] },
+    ]
+  },
+  {
+    id: 2, name: "Phase 2", title: "JavaScript & the browser", duration: "weeks 7–10", color: "#1D9E75",
+    days: [
+      { title: "How the browser works", time: "1 hr", tasks: ["Understand HTML, CSS, JS relationship", "Open DevTools — explore the console and elements panel", "Edit a live website's CSS in DevTools", "Inspect how cotton.design is structured"], resources: ["developer.mozilla.org"] },
+      { title: "DOM manipulation", time: "1 hr", tasks: ["Learn querySelector and getElementById", "Change text content and styles with JS", "Add and remove CSS classes dynamically", "Build a button that changes page colours"], resources: ["javascript.info DOM chapter"] },
+      { title: "Events & listeners", time: "1 hr", tasks: ["Learn addEventListener for click, mousemove, keydown", "Build an interactive element driven by mouse position", "Use event.clientX/Y to drive a visual", "Add a keyboard shortcut that triggers something"], resources: ["javascript.info events"] },
+      { title: "CSS animations + JS control", time: "1 hr", tasks: ["Learn CSS transitions and keyframe animations", "Trigger a CSS animation with a JS class toggle", "Build a logo that animates on hover", "Study how Cotton's site uses CSS transitions"], resources: ["css-tricks.com animation guide"] },
+      { title: "Canvas API (native)", time: "1 hr", tasks: ["Use the native canvas element without p5.js", "Draw shapes, paths, and text with raw canvas API", "Understand ctx.save() and ctx.restore()", "Rebuild a simple p5 sketch in native canvas"], resources: ["developer.mozilla.org canvas tutorial"] },
+      { title: "requestAnimationFrame", time: "1 hr", tasks: ["Learn the animation loop without p5's draw()", "Build a smooth animation using rAF", "Control frame rate manually", "Understand delta time for smooth animation"], resources: ["developer.mozilla.org rAF"] },
+      { title: "SVG in the browser", time: "1 hr", tasks: ["Understand SVG structure — paths, groups, transforms", "Manipulate SVG elements with JavaScript", "Animate SVG properties with JS", "Build an animated SVG logo concept"], resources: ["css-tricks.com SVG guide"] },
+      { title: "Weekly project: animated brand mark", time: "2.5 hr", tasks: ["Design a simple brand mark", "Animate it using CSS or SVG animation", "Make it interactive — responds to hover or click", "Post to Instagram with before/after"], resources: ["codepen.io for inspiration"] },
+      { title: "ES6+ modern JavaScript", time: "1 hr", tasks: ["Learn arrow functions, template literals, destructuring", "Understand spread/rest operators", "Refactor old code to use modern syntax", "Learn optional chaining and nullish coalescing"], resources: ["javascript.info modern JS"] },
+      { title: "Fetch API & working with data", time: "1 hr", tasks: ["Use fetch() to load a JSON file", "Handle the promise with .then() or async/await", "Render fetched data as a visual", "Load a public API (e.g. weather or Wikipedia)"], resources: ["javascript.info fetch"] },
+      { title: "Modules & code organisation", time: "1 hr", tasks: ["Understand ES modules — import and export", "Split your code into logical files", "Build a small utility library of your favourite functions", "Understand why modules matter for larger projects"], resources: ["javascript.info modules"] },
+      { title: "Intro to Node.js", time: "1 hr", tasks: ["Install Node.js and npm", "Run a JS file in the terminal", "Understand the difference between browser JS and Node", "Install a package with npm and use it"], resources: ["nodejs.org getting started"] },
+      { title: "Build tools basics", time: "1 hr", tasks: ["Learn what Vite does and why it exists", "Set up a Vite project from scratch", "Understand hot module replacement", "Move a p5.js sketch into a Vite project"], resources: ["vitejs.dev guide"] },
+      { title: "Weekly project: data portrait", time: "2.5 hr", tasks: ["Find a personal dataset (your Spotify listens, sleep data, steps)", "Build a custom visual that represents YOU", "Use fetch or a JSON file as the data source", "Post with a caption explaining the data"], resources: ["openprocessing.org", "observablehq.com"] },
+      { title: "Git & version control", time: "1 hr", tasks: ["Install Git and create a GitHub account", "Learn init, add, commit, push", "Push one of your existing sketches to GitHub", "Understand branches at a basic level"], resources: ["git-scm.com/book"] },
+      { title: "Deploy your work", time: "1 hr", tasks: ["Deploy a project to Vercel or Netlify (free)", "Get a public URL for one of your sketches", "Share the live link — not just a screenshot", "Understand what deployment actually does"], resources: ["vercel.com", "netlify.com"] },
+    ]
+  },
+  {
+    id: 3, name: "Phase 3", title: "Three.js & 3D web", duration: "weeks 11–16", color: "#D85A30",
+    days: [
+      { title: "3D thinking & Three.js setup", time: "1 hr", tasks: ["Understand 3D coordinate systems (x, y, z)", "Set up a Three.js scene, camera, and renderer", "Add a rotating cube to the screen", "Understand the scene graph concept"], resources: ["threejs.org/docs", "threejs-journey.com"] },
+      { title: "Geometries & materials", time: "1 hr", tasks: ["Explore BoxGeometry, SphereGeometry, PlaneGeometry", "Learn MeshBasicMaterial vs MeshStandardMaterial", "Add wireframe mode to understand structure", "Build a scene with 5 different geometries"], resources: ["threejs.org geometry docs"] },
+      { title: "Lighting", time: "1 hr", tasks: ["Add AmbientLight, DirectionalLight, PointLight", "Understand how light affects different materials", "Make a scene with dramatic shadow lighting", "Experiment with coloured lights"], resources: ["threejs.org lighting docs"] },
+      { title: "Camera & controls", time: "1 hr", tasks: ["Understand PerspectiveCamera vs OrthographicCamera", "Add OrbitControls for mouse navigation", "Animate the camera along a path", "Build a first-person-style camera controller"], resources: ["threejs-journey.com ch3"] },
+      { title: "Textures", time: "1 hr", tasks: ["Load a texture with TextureLoader", "Apply a texture map to a mesh", "Understand UV mapping basics", "Apply a normal map to add surface detail"], resources: ["threejs.org texture docs"] },
+      { title: "Animation loop in Three.js", time: "1 hr", tasks: ["Use the clock and elapsed time for smooth animation", "Animate object rotation, position, and scale", "Use Math.sin() to create looping motion", "Build a satisfying idle animation"], resources: ["threejs-journey.com"] },
+      { title: "Weekly project: 3D brand element", time: "3 hr", tasks: ["Design a 3D version of a simple logo or brand mark", "Animate it with a looping rotation or pulse", "Add lighting to make it feel premium", "Export a screen recording to post"], resources: ["threejs.org", "sketchfab.com for reference"] },
+      { title: "Custom geometry & BufferGeometry", time: "1.5 hr", tasks: ["Understand BufferGeometry and vertex positions", "Build a simple custom mesh from vertices", "Modify vertex positions to deform a mesh", "Animate vertex positions over time"], resources: ["threejs-journey.com ch9"] },
+      { title: "Shaders intro (GLSL)", time: "1.5 hr", tasks: ["Understand what shaders are — vertex and fragment", "Write a basic ShaderMaterial in Three.js", "Pass a uniform (like time) into a shader", "Make a simple colour-shifting material"], resources: ["threejs-journey.com shader chapter", "shadertoy.com"] },
+      { title: "Post-processing effects", time: "1 hr", tasks: ["Add EffectComposer to your scene", "Apply a bloom pass", "Try chromatic aberration or film grain", "Understand how post-processing affects performance"], resources: ["threejs.org post-processing docs"] },
+      { title: "Particles in Three.js", time: "1.5 hr", tasks: ["Create a Points mesh with BufferGeometry", "Position 10,000 particles randomly", "Animate particles with a shader or JS", "Build a particle galaxy or nebula"], resources: ["threejs-journey.com particles chapter"] },
+      { title: "Interactive 3D (raycasting)", time: "1 hr", tasks: ["Understand raycasting for mouse interaction", "Detect when the mouse hovers over a 3D object", "Change material on hover", "Trigger an animation on click"], resources: ["threejs.org raycaster docs"] },
+      { title: "Loading 3D models (GLTF)", time: "1 hr", tasks: ["Download a free GLTF model from Sketchfab", "Load it with GLTFLoader", "Play embedded animations with AnimationMixer", "Light and present it well in your scene"], resources: ["sketchfab.com/free", "threejs.org gltf docs"] },
+      { title: "Scroll-driven 3D animation", time: "1.5 hr", tasks: ["Link scroll position to camera or object movement", "Use window.scrollY to drive a Three.js value", "Build a scene where objects reveal as you scroll", "Study how agency portfolio sites use scroll + 3D"], resources: ["gsap.com ScrollTrigger docs"] },
+      { title: "Weekly project: interactive 3D experience", time: "3 hr", tasks: ["Build a fully interactive 3D piece", "Must use: custom geometry or particles, lighting, mouse interaction", "Deploy it live with a public URL", "Post the link + a screen recording"], resources: ["threejs.org", "vercel.com"] },
+      { title: "Performance optimisation", time: "1 hr", tasks: ["Understand draw calls and why they matter", "Learn instanced mesh for repeated objects", "Use Stats.js to monitor frame rate", "Optimise one of your scenes to hit 60fps"], resources: ["threejs-journey.com performance chapter"] },
+    ]
+  },
+  {
+    id: 4, name: "Phase 4", title: "Algorithmic design & portfolio", duration: "weeks 17–20", color: "#c084fc",
+    days: [
+      { title: "Generative design thinking", time: "1.5 hr", tasks: ["Read 'Generative Design' intro chapter (Benedikt Gross)", "Study 3 Cotton projects — identify the system behind each", "Sketch (on paper) a rule-based visual system", "Translate those rules into pseudocode"], resources: ["generative-gestaltung.de", "cotton.design/work"] },
+      { title: "Data-driven brand identity", time: "1.5 hr", tasks: ["Pick a brand concept — give it 3 data attributes", "Build a logo mark that changes based on those values", "Generate 20 variations automatically", "Select the strongest 5 and compare"], resources: ["cotton.design/work/brocade for reference"] },
+      { title: "Variable typography with code", time: "1.5 hr", tasks: ["Load a variable font (Google Fonts has many)", "Control font-variation-settings with JS", "Animate between weight extremes", "Make typography react to mouse or scroll position"], resources: ["v-fonts.com", "developer.mozilla.org variable fonts"] },
+      { title: "Pattern generators", time: "1.5 hr", tasks: ["Build a configurable tile-based pattern system", "Parameters: scale, rotation, density, colour", "Add a UI to control each parameter", "Generate and export 10 pattern variations"], resources: ["openprocessing.org patterns"] },
+      { title: "Audio-reactive visuals", time: "1.5 hr", tasks: ["Use Web Audio API to analyse frequency data", "Map frequency bands to visual properties", "Build a custom audio visualiser", "Test it with different genres of music"], resources: ["developer.mozilla.org Web Audio API"] },
+      { title: "Build a brand toolkit", time: "2 hr", tasks: ["Choose a fictional brand", "Build a generative colour palette tool for it", "Build a generative pattern generator for it", "Combine both into a single brand tool page"], resources: ["cotton.design for reference"] },
+      { title: "Portfolio site planning", time: "1.5 hr", tasks: ["Audit everything you've built across 4 phases", "Select your 6 best projects", "Write a one-paragraph case study for each", "Sketch 3 different portfolio site structures"], resources: ["awwwards.com for reference"] },
+      { title: "Portfolio site — structure & nav", time: "2 hr", tasks: ["Set up a Vite or Next.js project for your portfolio", "Build the navigation and page structure", "Code the homepage hero — make it generative", "Ensure it works on mobile"], resources: ["nextjs.org", "vitejs.dev"] },
+      { title: "Portfolio site — project pages", time: "2 hr", tasks: ["Build a template for project case studies", "Add each of your 6 projects", "Include: live demo link, process notes, tools used", "Add a short 'about' section"], resources: ["framer.com for layout inspiration"] },
+      { title: "Portfolio site — polish & details", time: "2 hr", tasks: ["Add page transitions", "Tune all animations and timing", "Check colour contrast and accessibility", "Get feedback from one designer friend"], resources: ["gsap.com for transitions"] },
+      { title: "Deploy & share portfolio", time: "1 hr", tasks: ["Deploy the finished portfolio to Vercel", "Buy a simple domain if budget allows", "Share the URL on LinkedIn and Instagram", "DM it to 3 studios you admire including Cotton"], resources: ["vercel.com", "namecheap.com"] },
+      { title: "Study & reverse-engineer", time: "2 hr", tasks: ["Pick the Cotton project you most admire", "Spend 30 min analysing it — what's the system?", "Spend 90 min rebuilding your own version", "Note every technique you had to look up"], resources: ["cotton.design/work"] },
+      { title: "Build something new", time: "3 hr", tasks: ["No tutorial — just make something", "Apply everything from all 4 phases", "Let it be imperfect — the goal is independent making", "Post it"], resources: [] },
+      { title: "Reflect & plan next steps", time: "1 hr", tasks: ["List the 5 techniques you still find hardest", "Write 3 specific goals for the next 3 months", "Identify 2–3 studios or jobs to aim for", "Update your LinkedIn with your new skills"], resources: [] },
+    ]
+  }
+];
+
+let completedDays = JSON.parse(localStorage.getItem('ccplan_completed') || '{}');
+let currentPhase = 0;
+let selectedDay = null;
+
+function totalDays() { return phases.reduce((s, p) => s + p.days.length, 0); }
+function doneCount() { return Object.keys(completedDays).filter(k => completedDays[k]).length; }
+function dayKey(pi, di) { return `p${pi}-d${di}`; }
+function save() { localStorage.setItem('ccplan_completed', JSON.stringify(completedDays)); }
+
+function updateStats() {
+  document.getElementById('stat-done').textContent = doneCount();
+  document.getElementById('stat-phase').textContent = `${currentPhase + 1} of ${phases.length}`;
+  document.getElementById('stat-remaining').textContent = totalDays() - doneCount();
+}
+
+function renderNav() {
+  document.getElementById('phase-nav').innerHTML = phases.map((p, i) =>
+    `<button class="phase-btn${i === currentPhase ? ' active' : ''}" onclick="switchPhase(${i})">${p.name}</button>`
+  ).join('');
+}
+
+function switchPhase(idx) {
+  currentPhase = idx; selectedDay = null;
+  renderNav(); renderPhase(); updateStats();
+}
+
+function renderPhase() {
+  const p = phases[currentPhase];
+  const done = p.days.filter((_, i) => completedDays[dayKey(currentPhase, i)]).length;
+  const pct = Math.round((done / p.days.length) * 100);
+
+  let html = `<div class="phase-header">
+    <div class="phase-title">${p.title}</div>
+    <div class="phase-meta">${p.duration} &nbsp;·&nbsp; ${done} of ${p.days.length} days complete</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${p.color};box-shadow:0 0 10px ${p.color}88;"></div></div>
+  <div class="day-grid">`;
+
+  p.days.forEach((d, i) => {
+    const isDone = completedDays[dayKey(currentPhase, i)];
+    const isActive = selectedDay === i;
+    html += `<div class="day-card${isDone ? ' done' : ''}${isActive ? ' active-day' : ''}" onclick="selectDay(${i})">
+      ${isDone ? '<i class="ti ti-check check-icon" aria-hidden="true"></i>' : ''}
+      <div class="day-num">Day ${i + 1}</div>
+      <div class="day-title">${d.title}</div>
+      <div class="day-time"><i class="ti ti-clock" style="font-size:11px;"></i> ${d.time}</div>
+    </div>`;
+  });
+
+  html += '</div>';
+
+  if (selectedDay !== null) {
+    const d = p.days[selectedDay];
+    const isDone = completedDays[dayKey(currentPhase, selectedDay)];
+    html += `<div class="detail-panel">
+      <div class="detail-title">Day ${selectedDay + 1} — ${d.title}</div>
+      <ul class="task-list">
+        ${d.tasks.map(t => `<li class="task-item"><div class="task-dot"></div><span>${t}</span></li>`).join('')}
+      </ul>
+      ${d.resources.length ? `<div class="resource-row">${d.resources.map(r => `<span class="resource-tag"><i class="ti ti-external-link" style="font-size:10px;vertical-align:-1px;margin-right:4px;"></i>${r}</span>`).join('')}</div>` : ''}
+      <button class="mark-btn${isDone ? ' done-btn' : ''}" onclick="toggleDone(${selectedDay})">
+        <i class="ti ti-${isDone ? 'check' : 'circle-check'}"></i> ${isDone ? 'Completed' : 'Mark as done'}
+      </button>
+    </div>`;
+  }
+
+  document.getElementById('phase-content').innerHTML = html;
+}
+
+function selectDay(idx) {
+  selectedDay = selectedDay === idx ? null : idx;
+  renderPhase();
+}
+
+function toggleDone(idx) {
+  const k = dayKey(currentPhase, idx);
+  completedDays[k] = !completedDays[k];
+  save(); renderPhase(); updateStats();
+}
+
+renderNav(); renderPhase(); updateStats();
+</script>
+</body>
+</html>
